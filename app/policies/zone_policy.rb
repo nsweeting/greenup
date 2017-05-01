@@ -1,4 +1,4 @@
-class SaleTaxPolicy < ApplicationPolicy
+class ZonePolicy < ApplicationPolicy
   def index?
     standard_policy(:read)
   end

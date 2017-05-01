@@ -1,46 +1,45 @@
 class LineItem < ApplicationRecord
-  belongs_to :order, touch: true
+  # ASSOCIATIONS
+  belongs_to :order
   belongs_to :variant, optional: true
   has_one :product, through: :variant
   has_one :account, through: :order
+  has_many :tax_lines, as: :taxable, dependent: :destroy
 
-  monetize :price_cents, {
+  # MONETIZATIONS
+  monetize :price_cents, :total_price_cents, {
     with_model_currency: :currency,
     numericality: { greater_than: 0 }
   }
   monetize :total_discount_cents, with_model_currency: :currency
 
-  validates :order, presence: true
-  validates :title, presence: true
+  # DELEGATIONS
+  delegate :tax_zones, to: :order
+
+  # VALIDATIONS
+  with_options presence: true do
+    validates :order, :title
+  end
   validates :quantity, numericality: { only_integer: true, greater_than: 0 }
   validates :grams, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
-  before_validation :before_validation_set_assoc_attr
-  before_validation :before_validation_set_name
-  before_validation :before_validation_set_grams
-  before_validation :before_validation_set_price
+  # CALLBACKS
+  before_validation { Decorators::LineItem.assign!(self) }
+  before_validation { Calculators::LineItem.assign!(self) }
+  after_save :after_save_update_tax_lines
+  after_save { Calculators::Order.update!(order) }
+
+  def name
+    variant_title.present? ? "#{title} - #{variant_title}" : title
+  end
 
   private
 
-  def before_validation_set_assoc_attr
-    return unless variant.present?
-    self.title          = product.title
-    self.vendor         = product.vendor
-    self.variant_title  = variant.title
-    self.taxable        = variant.taxable
-  end
-
-  def before_validation_set_name
-    self.name = variant_title.present? ? "#{title} - #{variant_title}" : title
-  end
-
-  def before_validation_set_grams
-    return unless variant.present?
-    self.grams = quantity.to_i * variant.grams
-  end
-
-  def before_validation_set_price
-    return unless variant.present?
-    self.price_cents = quantity.to_i * variant.price_cents
+  def after_save_update_tax_lines
+    tax_lines.destroy_all
+    return unless taxable
+    tax_zones.includes(:tax_rates).each do |zone|
+      zone.tax_rates.each { |rate| tax_lines.create!(tax_rate: rate) }
+    end
   end
 end

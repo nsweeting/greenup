@@ -7,6 +7,7 @@ end
 
 gem 'activeresource', github: 'rails/activeresource'
 gem 'active_model_serializers'
+gem 'active_shipping'
 gem 'bcrypt', '~> 3.1.7'
 gem 'has_scope'
 gem 'jwt'
@@ -26,6 +27,7 @@ gem 'redis-rails'
 
 group :development, :test do
   gem 'byebug', platform: :mri
+  gem 'railroady'
 end
 
 group :test do

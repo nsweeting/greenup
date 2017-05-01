@@ -10,7 +10,7 @@ class Address < ApplicationRecord
   with_options presence: true do
     validates :first_name, :last_name, :address_1, :city, :province, :country
   end
-  validates_with Validations::PostalCode
+  validates_with Validators::PostalCode
   validate :validate_province
 
   private

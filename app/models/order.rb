@@ -4,6 +4,7 @@ class Order < ApplicationRecord
   belongs_to :account
   belongs_to :customer, optional: true
   has_many :line_items
+  has_many :tax_lines, through: :line_items
 
   has_address :shipping
   has_address :billing
@@ -14,20 +15,25 @@ class Order < ApplicationRecord
 
   accepts_nested_attributes_for :customer, :shipping_address, :billing_address
 
+  alias tax_address shipping_address
+
   with_options presence: true do
     validates :account, :number, :name
   end
   validate :validate_customer_account
 
-  before_validation :before_validation_set_defaults, on: :create
+  before_validation { Decorators::Order.assign!(self) }
+  before_save { Calculators::Order.assign!(self) }
+
+  def tax_zones
+    @tax_zones ||= account.zones.matches(tax_address)
+  end
+
+  def calculator
+    @calculator ||= OrderCalculator.new(self)
+  end
 
   private
-
-  def before_validation_set_defaults
-    last_order = account.orders.select(:number).last&.number || 0
-    self.number = last_order + 1
-    self.name = "##{last_order + 1000}"
-  end
 
   def validate_customer_account
     return unless customer.present?

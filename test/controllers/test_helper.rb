@@ -12,6 +12,7 @@ class ActiveSupport::TestCase
   end
 
   def valid_headers(member, version = 1)
+    host!("#{member.account.name}.example")
     version = version_header(version)
     auth = valid_auth_header(member)
     version.merge!(auth)

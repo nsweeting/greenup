@@ -10,8 +10,8 @@ module Security
 
     attr_reader :member
 
-    def initialize(headers = {})
-      @headers        = headers
+    def initialize(request)
+      @request        = request
       @valid          = false
     end
 
@@ -26,20 +26,28 @@ module Security
     end
 
     def member_from(token)
-      ids = [token[:mid], token[:uid], token[:aid]]
-      @member = Member.for_authorization(*ids).first
+      auth = [token[:mid], token[:uid], account_name]
+      @member = Member.for_authorization(*auth).first
       valid! if @member.present?
     end
 
     private
 
-    attr_reader :headers, :token
+    attr_reader :request, :token
 
     def decode_token
       body = JWT.decode(auth_header, Rails.application.secrets.secret_key_base)[0]
       HashWithIndifferentAccess.new(body)
     rescue
       nil
+    end
+
+    def headers
+      request.headers
+    end
+
+    def account_name
+      request.subdomain
     end
 
     def auth_header

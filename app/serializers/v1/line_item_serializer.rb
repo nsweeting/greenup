@@ -3,6 +3,8 @@ module V1
     attributes :id, :title, :variant_title, :vendor, :name, :grams, :quantity,
                :price, :total_discount, :currency, :taxable, :requires_shipping,
                :variant_id, :created_at, :updated_at
+    
+    has_many :tax_lines
 
     def price
       object.price.format

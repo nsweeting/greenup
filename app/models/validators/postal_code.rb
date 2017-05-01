@@ -1,4 +1,4 @@
-module Validations
+module Validators
   class PostalCode < ActiveModel::Validator
     COUNTRY_REGEX = {
       'CA' => /\A[ABCEGHJKLMNPRSTVXY]{1}\d{1}[A-Z]{1} *\d{1}[A-Z]{1}\d{1}\z/

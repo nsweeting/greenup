@@ -7,7 +7,7 @@ module V1
 
     has_one :shipping_address
     has_one :billing_address
-    has_one :customer
+    belongs_to :customer
     has_many :line_items
 
     def total_price

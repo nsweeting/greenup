@@ -1,5 +1,5 @@
 module V1
-  class ApplicationController < ActionController::API
+  class ApplicationController < ::ApplicationController
     include Pundit
     include JsonErrors
 
@@ -12,7 +12,7 @@ module V1
     attr_reader :current_member
 
     def authenticate_request
-      auth = Security::Authorize.call(request.headers)
+      auth = Security::Authorize.call(request)
       if auth.valid?
         @current_member = auth.member
       else

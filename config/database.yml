@@ -5,7 +5,7 @@ default: &default
 
 development:
   <<: *default
-  database: greenit_development
+  database: greenup_development
   username: <%= ENV['POSTGRES_USERNAME'] %>
   password: <%= ENV['POSTGRES_PASSWORD'] %>
 
@@ -14,7 +14,7 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: greenit_test
+  database: greenup_test
 
 production:
   <<: *default
